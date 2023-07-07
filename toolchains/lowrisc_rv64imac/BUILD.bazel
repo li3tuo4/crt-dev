@@ -1,0 +1,49 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("//config:compiler.bzl", "setup")
+load("//platforms/riscv64:devices.bzl", "DEVICES")
+
+package(default_visibility = ["//visibility:public"])
+
+SYSTEM_INCLUDE_PATHS = [
+    "external/lowrisc_rv64imac_files/lib/clang/16/include",
+    "external/lowrisc_rv64imac_files/riscv64-unknown-elf/include",
+    "external/lowrisc_rv64imac_files/riscv64-unknown-elf/include/c++/10.2.0",
+    "external/lowrisc_rv64imac_files/riscv64-unknown-elf/include/c++/10.2.0/backward",
+    "external/lowrisc_rv64imac_files/riscv64-unknown-elf/include/c++/10.2.0/riscv64-unknown-elf",
+]
+
+filegroup(
+    name = "compiler_components",
+    srcs = [
+        "//toolchains/lowrisc_rv64imac/wrappers:all",
+        "@lowrisc_rv64imac_files//:all",
+    ],
+)
+
+[setup(
+    name = device.name,
+    architecture = device.architecture,
+    artifact_naming = device.artifact_naming,
+    compiler_components = ":compiler_components",
+    constraints = device.constraints,
+    feature_set = device.feature_set,
+    include_directories = SYSTEM_INCLUDE_PATHS,
+    params = {
+        "compiler": "clang",
+    },
+    substitutions = device.substitutions,
+    tools = {
+        "ar": "wrappers/ar",
+        "cpp": "wrappers/cpp",
+        "gcc": "wrappers/clang",
+        "gcov": "wrappers/gcov",
+        "ld": "wrappers/ld",
+        "nm": "wrappers/nm",
+        "objcopy": "wrappers/objcopy",
+        "objdump": "wrappers/objdump",
+        "strip": "wrappers/strip",
+    },
+) for device in DEVICES]
